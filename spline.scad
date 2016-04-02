@@ -1,15 +1,15 @@
 /* Catmull-Rom splines.
   An easy way to model smooth curve that follows a set of points.
-  Do "use <spline.scad>", probably works better than "include".
+  Do "use <tjw-scad/spline.scad>", probably works better than "include".
   Read the module comments below; basic usage is to pass an array of 2D points,
   and specify how many levels of subdivisions you want (more is smoother,
   and each level doubles the number of points) and whether you want a closed loop
   or an open-ended path.
 
   To do:
-    end caps on noodle are cut off, but another function adds hemispheres
-    ramen vs. udon
-    Examples
+    udon example has rough elbows
+      do we need to use quaternion interpolation? but there are inherent orientation issues in the example...
+    Examples, for putting on Thingiverse
       carve out tunnels and/or grooves in a block
       tube/hose function - hollow noodle
       bouquet of bent nails/tubes
@@ -18,6 +18,7 @@
     make the cross-section a parameter
       and it could be made from a spline
       and it could interpolate (loft) between several splines, twist, scale
+        mustache
     make a version that passes the diameter along with the vector of points
       interpolate it with the same function as you use for the points
     Number the control points in showMarkers()
@@ -33,47 +34,8 @@
   http://forum.openscad.org/smooth-3-D-curves-td7766.html
 */
 
-// Makes a 2D shape that connects a series of points on the X-Y plane,
-// with the given width.
-// If loop is true, connects the ends together.
-// If you output this as is, OpenSCAD appears to extrude it linearly by 1 unit,
-// centered on Z=0.
-module ribbon(path, width=1, loop=false)
-{
-  union() {
-    for (i = [0 : len(path) - (loop? 1 : 2)]) {
-      hull() {
-        translate(path[i])
-          circle(d=width);
-        translate(path[(i + 1) % len(path)])
-          circle(d=width);
-      }
-    }
-  }
-}
-
-// Extrudes a ribbon to the given height.
-module wall(path, width=1, height=1, loop=false)
-{
-  linear_extrude(height)
-    ribbon(path, width, loop);
-}
-
-// Like a wall, but with a circular cross-section instead of a rectangle.
-module noodle(path, diameter=1, loop=false, circle_steps=12)
-{
-  if (loop) {
-    np = loop_extrusion_points(path, circle_points(diameter/2, circle_steps));
-    nf = loop_extrusion_faces(len(path), circle_steps);
-    polyhedron(points = np, faces = nf);
-  } else {
-    np = path_extrusion_points(path, circle_points(diameter/2, circle_steps));
-    nf = path_extrusion_faces(len(path), circle_steps);
-    //echo("path", path);
-    //echo("np", np);
-    polyhedron(points = np, faces = nf);
-  }
-}
+// ================================================================================
+// Spline functions - mostly convenience calls to lower-level primitives.
 
 // Makes a 2D shape that interpolates between the points on the given path,
 // with the given width, in the X-Y plane.
@@ -88,10 +50,29 @@ module spline_wall(path, width=1, height=1, subdivisions=4, loop=false)
   wall(smooth(path, subdivisions, loop), width, height, loop);
 }
 
-// Extrudes a spline as a noodle with the given diameter.
-module spline_noodle(path, diameter=1, circle_steps=12, subdivisions=4, loop=false)
+// Extrudes a spline as a ramen noodle with the given diameter.
+module spline_ramen(path, diameter=1, circle_steps=12, subdivisions=4, loop=false)
 {
-  noodle(smooth(path, subdivisions, loop), diameter, loop, circle_steps);
+  ramen(smooth(path, subdivisions, loop), diameter, circle_steps, loop);
+}
+
+// Extrudes a spline as an udon noodle with the given diameter.
+module spline_udon(path, width=1, height=0, subdivisions=4, loop=false)
+{
+  udon(smooth(path, subdivisions, loop), width, height, loop);
+}
+
+// Like spline_ramen, but instead of cutting off the noodle with a knife,
+// end caps are added so that it's like a sausage (to fit the food theme).
+module spline_sausage(path, diameter=1, circle_steps=12, subdivisions=4)
+{
+  union() {
+    translate(path[0])
+      sphere(d=diameter, center=true, $fn=circle_steps);
+    ramen(smooth(path, subdivisions, loop), diameter, circle_steps);
+    translate(path[len(path) - 1])
+      sphere(d=diameter, center=true, $fn=circle_steps);
+  }
 }
 
 // Makes a lathed 3D shape whose inner edge follows the given path, as 2D points.
@@ -117,26 +98,103 @@ module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[])
    }
 }
 
-// ==================================================================
-// Debugging tools
+// ================================================================================
+// Rendering paths and loops
 
-MARKER_D = 1;
-MARKER_R = MARKER_D / 2;
-
-// Shows a list of points as dots on the X-Y plane.
-// Places the dots' right edges (+X) at the exact point.
-// Probably not useful for modeling, but nice for debugging paths.
-module showMarkers(points) {
-  for (i = [0 : len(points) - 1]) {
-    // Make the markers' right edge coincide
-    translate([points[i][0] - MARKER_R, points[i][1], 0])
-      rotate(30)
-        circle(MARKER_R);
+// Makes a 2D shape that connects a series of 2D points on the X-Y plane,
+// with the given width.
+// If loop is true, connects the ends together.
+// If you output this as is, OpenSCAD appears to extrude it linearly by 1 unit,
+// centered on Z=0.
+module ribbon(path, width=1, loop=false)
+{
+  union() {
+    for (i = [0 : len(path) - (loop? 1 : 2)]) {
+      hull() {
+        translate(path[i])
+          circle(d=width);
+        translate(path[(i + 1) % len(path)])
+          circle(d=width);
+      }
+    }
   }
+}
+
+// Extrudes a ribbon to the given height.
+module wall(path, width=1, height=1, loop=false)
+{
+  linear_extrude(height)
+    ribbon(path, width, loop);
+}
+
+// Like a wall, but extrudes the given cross-section instead of linearly extruding upward.
+// Accepts 3D points in path.
+// cross_section must be 3D points, and assumes its points are all Z=0 and progress clockwise.
+module noodle(path, cross_section, loop=false)
+{
+  if (loop) {
+    np = loop_extrusion_points(path, cross_section);
+    nf = loop_extrusion_faces(len(path), len(cross_section));
+    polyhedron(points = np, faces = nf);
+  } else {
+    np = path_extrusion_points(path, cross_section);
+    nf = path_extrusion_faces(len(path), len(cross_section));
+    polyhedron(points = np, faces = nf);
+  }
+}
+
+// Makes a noodle that has a circular cross-section.
+module ramen(path, diameter=1, circle_steps=12, loop=false)
+{
+  noodle(path, circle_points(diameter/2, circle_steps), loop=loop);
+}
+
+// Makes a noodle that has a rectangular cross-section.
+// The default height is the same as the width.
+module udon(path, width=1, height=0, loop=false)
+{
+  h = (height > 0? height : width) / 2;
+  w = width / 2;
+  cross_section = [[-h, -w, 0], [-h, w, 0], [h, w, 0], [h, -w, 0]];
+  noodle(path, cross_section, loop=loop);
 }
 
 // ==================================================================
 // Interpolation and path smoothing
+
+// Takes a path of points (any dimensionality),
+// and inserts additional points between the points to smooth it.
+// Repeats that n times, and returns the result.
+// If loop is true, connects the end of the path to the beginning.
+function smooth(path, n, loop=false) =
+  n == 0
+    ? path
+    : loop
+      ? smooth(subdivide_loop(path), n-1, true)
+      : smooth(subdivide(path), n-1, false);
+
+// Takes an open-ended path of points (any dimensionality), 
+// and subdivides the interval between each pair of points from i to the end.
+// Returns the new path.
+function subdivide(path) =
+  let(n = len(path))
+  flatten(concat([for (i = [0 : 1 : n-1])
+    i < n-1? 
+      // Emit the current point and the one halfway between current and next.
+      [path[i], interpolateOpen(path, n, i)]
+    :
+      // We're at the end, so just emit the last point.
+      [path[i]]
+  ]));
+
+// Takes a closed loop points (any dimensionality), 
+// and subdivides the interval between each pair of points from i to the end.
+// Returns the new path.
+function subdivide_loop(path, i=0) = 
+  let(n = len(path))
+  flatten(concat([for (i = [0 : 1 : n-1])
+    [path[i], interpolateClosed(path, n, i)]
+  ]));
 
 weight = [-1, 9, 9, -1] / 16;
 weight0 = [6, 11, -1] / 16;
@@ -172,42 +230,8 @@ function interpolateClosed(path, n, i) =
   path[(i + 1) % n]     * weight[2] +
   path[(i + 2) % n]     * weight[3] ;
 
-// Takes an open-ended path of points (any dimensionality), 
-// and subdivides the interval between each pair of points from i to the end.
-// Returns the new path.
-function subdivide(path) =
-  let(n = len(path))
-  flatten(concat([for (i = [0 : 1 : n-1])
-    i < n-1? 
-      // Emit the current point and the one halfway between current and next.
-      [path[i], interpolateOpen(path, n, i)]
-    :
-      // We're at the end, so just emit the last point.
-      [path[i]]
-  ]));
-
-// Takes a closed loop points (any dimensionality), 
-// and subdivides the interval between each pair of points from i to the end.
-// Returns the new path.
-function subdivide_loop(path, i=0) = 
-  let(n = len(path))
-  flatten(concat([for (i = [0 : 1 : n-1])
-    [path[i], interpolateClosed(path, n, i)]
-  ]));
-
-// Takes a path of points (any dimensionality),
-// and inserts additional points between the points to smooth it.
-// Repeats that n times, and returns the result.
-// If loop is true, connects the end of the path to the beginning.
-function smooth(path, n, loop=false) =
-  n == 0
-    ? path
-    : loop
-      ? smooth(subdivide_loop(path), n-1, true)
-      : smooth(subdivide(path), n-1, false);
-
 // ==================================================================
-// Modeling a noodle
+// Modeling a noodle: extrusion tools.
 // Mostly from Kris Wallace's knot_functions, modified to remove globals
 // and to allow for non-looped paths.
 
@@ -333,10 +357,29 @@ function path_extrusion_faces(segs, cross_section_len) =
   );
 
 // ==================================================================
+// Debugging tools
+
+MARKER_D = 1;
+MARKER_R = MARKER_D / 2;
+
+// Shows a list of points as dots on the X-Y plane.
+// Places the dots' right edges (+X) at the exact point.
+// Probably not useful for modeling, but nice for debugging paths.
+module showMarkers(points) {
+  for (i = [0 : len(points) - 1]) {
+    // Make the markers' right edge coincide
+    translate([points[i][0] - MARKER_R, points[i][1], 0])
+      rotate(30)
+        circle(MARKER_R);
+  }
+}
+
+// ==================================================================
 // Examples, doubling as unit tests.
-// Do 'use <spline.scad>' to avoid inserting these.
+// Do 'use <spline.scad>' rather than 'include' to avoid including these into your module.
 
 TEST_SPACING = 5;
+NUM_TEST_COLUMNS = 7;
 
 module SeparateChildren(space) {
   for (i = [0 : 1 : $children-1])
@@ -351,6 +394,7 @@ segment_3D = [[-1, -1, 0], [1, 1, 0]];
 path_flat = [[-1, -1, 0], [0, 0, 0], [-3, 0, 0]];
 sharp_path_3D = [[0, 0, 0], [-1, 1, 0], [-1, -1, 0]];
 path_3D = [[-1, -1, 0], [1, -1, 0], [2, 1, 0], [-1, 2, 0], [0, 0, 0]];
+squiggle = [[-1, -1, 0], [1, -1, 0], [2, 1, 2], [-1, 2, 1], [1, 1, 0]];
 
 // Test the functions.
 echo("flatten()", flatten([[[1, 1], [10, 10]], [2, 3, 4], [5, 6]]));
@@ -364,7 +408,7 @@ echo("normalize", normalize([1, 1, 1]));
 echo("halfway_normal", halfway_normal([0,0,0], [1,0,0], [0,1,0]));
 
 // Column labels
-for (i = [0 : 1 : 6])
+for (i = [0 : 1 : NUM_TEST_COLUMNS - 1])
   translate([-1 + TEST_SPACING * i, -4, 0])
     linear_extrude(height=0.25)
       scale(0.2)
@@ -394,14 +438,14 @@ SeparateChildren(TEST_SPACING) {
   // #4: Test spline_wall(loop)
   spline_wall(path_2D, loop=true, width=1/2, height=2, $fn=16);
 
-  // #5: Test noodle(loop)
-  noodle(path_3D, loop=true);
+  // #5: Test ramen(loop)
+  ramen(path_3D, loop=true);
 
-  // #6: Test spline_noodle(loop)
-  spline_noodle(path_3D, width=1, loop=true, circle_steps=30);
+  // #6: Test spline_ramen(loop)
+  spline_ramen(path_3D, width=1, loop=true, circle_steps=30);
 
-  // #7: A noodle with sharp elbows
-  spline_noodle(sharp_path_3D, loop=true);
+  // #7: A splined udon noodle, that has nonzero Z components.
+  spline_udon(squiggle, loop=true, subdivisions=2);
 }
 
 // Second row: open-ended paths
@@ -421,12 +465,15 @@ translate([0, TEST_SPACING, 0])
     // #4: Test spline_wall
     spline_wall(path_2D, width=1/2, height=2, $fn=16);
 
-    // #5: Test noodle
-    noodle(path_3D, circle_steps=12);
+    // #5: Test ramen
+    ramen(path_3D, circle_steps=12);
 
-    // #6: Test spline_noodle
-    spline_noodle(path_3D, circle_steps=20);
+    // #6: Test spline_ramen
+    spline_ramen(path_3D, circle_steps=20);
 
-    // #7: A sharp elbow noodle - not interpolated, helpful for debugging noodle
-    noodle(sharp_path_3D);
+    // #7: A splined udon noodle, that has nonzero Z components.
+    spline_udon(squiggle, height=1/2, subdivisions=5);
+
+    // #8: A splined sausage.
+    spline_sausage(squiggle, circle_steps=20);
   }
