@@ -6,9 +6,15 @@
   and each level doubles the number of points) and whether you want a closed loop
   or an open-ended path.
 
-  To do:
+  Issues:
+    Can't render
+      assertions in CGAL
+      non-planar faces
+        do we need to make end caps with triangles instead of polygons?
     udon example has rough elbows
       do we need to use quaternion interpolation? but there are inherent orientation issues in the example...
+
+  To do:
     Examples, for putting on Thingiverse
       carve out tunnels and/or grooves in a block
       tube/hose function - hollow noodle
@@ -20,7 +26,7 @@
       and it could interpolate (loft) between several splines, twist, scale
         mustache
     make a version that passes the diameter along with the vector of points
-      interpolate it with the same function as you use for the points
+      interpolate it with the same function as for the points
     Number the control points in showMarkers()
     lathe a solid = spline_lathe vs. spline_pot
     spiral lathe
@@ -72,6 +78,23 @@ module spline_sausage(path, diameter=1, circle_steps=12, subdivisions=4)
     ramen(smooth(path, subdivisions, loop), diameter, circle_steps);
     translate(path[len(path) - 1])
       sphere(d=diameter, center=true, $fn=circle_steps);
+  }
+}
+
+// Like spline_ramen, but makes a hollow tube.
+// If inner_diameter isn't specified, it's 80% of the outer_diameter.
+module spline_hose(path, inner_diameter=0, outer_diameter=1, circle_steps=12, subdivisions=4)
+{
+  id = inner_diameter == 0? outer_diameter * 0.8 : inner_diameter;
+
+  // Make a second path with extra end points, so the inner path sticks out farther.
+  path_plus = concat([project(path[1], path[0], path[0])],
+    path,
+    [project(path[len(path) - 2], path[len(path) - 1], path[len(path) - 1])]);
+
+  difference() {
+    spline_ramen(path, outer_diameter, circle_steps, subdivisions);
+    spline_ramen(path_plus, id, circle_steps, subdivisions);
   }
 }
 
@@ -291,6 +314,10 @@ function halfway_normal(prev, p, next) =
   :
     (next_norm + prev_norm) / 2;
 
+// Take the 3D vector from a -> b, and return point p projected in that direction one unit.
+function project(a, b, p) =
+  p + normalize(b - a);
+
 // Returns the 3D points lying on a circle with radius r, on the X-Y plane,
 // taking the given number of steps around the circumference.
 function circle_points(r = 1, steps=12) = 
@@ -445,7 +472,7 @@ SeparateChildren(TEST_SPACING) {
   spline_ramen(path_3D, width=1, loop=true, circle_steps=30);
 
   // #7: A splined udon noodle, that has nonzero Z components.
-  spline_udon(squiggle, loop=true, subdivisions=2);
+  spline_udon(squiggle, loop=true);
 }
 
 // Second row: open-ended paths
