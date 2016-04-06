@@ -7,18 +7,15 @@
   or an open-ended path.
 
   Issues:
-    Can't render
-      assertions in CGAL
-      non-planar faces
-        do we need to make end caps with triangles instead of polygons?
-    udon example has rough elbows
+    Many of my models using 'noodles' won't final-render due to internal OpenSCAD issues.
+      particularly with Boolean operations.
+    Udon example has rough elbows
       do we need to use quaternion interpolation? but there are inherent orientation issues in the example...
+      Specifying orientation per-path-vertex may be the only complete solution.
 
   To do:
     Examples, for putting on Thingiverse
       carve out tunnels and/or grooves in a block
-      tube/hose function - hollow noodle
-      bouquet of bent nails/tubes
       3D spline noodle
       
     make the cross-section a parameter
@@ -38,6 +35,9 @@
   http://kitwallace.tumblr.com/post/84772141699/smooth-knots-from-coordinates
   which was in turn from Oskar's notes at:
   http://forum.openscad.org/smooth-3-D-curves-td7766.html
+  See also https://en.wikipedia.org/wiki/Spline_interpolation,
+    https://en.wikipedia.org/wiki/Cubic_Hermite_spline,
+    https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline - but didn't implement from those.
 */
 
 // ================================================================================
@@ -219,7 +219,7 @@ function subdivide_loop(path, i=0) =
     [path[i], interpolateClosed(path, n, i)]
   ]));
 
-weight = [-1, 9, 9, -1] / 16;
+weight = [-1, 8, 8, -1] / 14;
 weight0 = [6, 11, -1] / 16;
 weight2 = [1, 1] / 2;
 
@@ -395,9 +395,11 @@ MARKER_R = MARKER_D / 2;
 module showMarkers(points) {
   for (i = [0 : len(points) - 1]) {
     // Make the markers' right edge coincide
-    translate([points[i][0] - MARKER_R, points[i][1], 0])
+    translate([points[i][0] - MARKER_R, points[i][1], 0]) {
       rotate(30)
         circle(MARKER_R);
+      translate([-1, -3, 0]) scale(0.2) text(str(i));
+    }
   }
 }
 

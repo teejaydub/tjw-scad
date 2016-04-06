@@ -1,14 +1,15 @@
-/* bouquet of hoses, to show off splines
+/* Bouquet of long-stemmed hoses, to show off splines.
+  Doesn't render with current versions of OpenSCAD, unfortunately.
 */
 
 include <../dfm.scad>
 include <../moves.scad>
 use <../spline.scad>
 
-path = [[-5, 0, 0], [5, 0, 0], [4, 2, 1], [-2, -1, 6], [-3, 0, 5], [4, 5, 10]];
+path = [[-3, 0, 0], [5, 0, 0], [4, 2, 1], [-2, -1, 6], [-3, 3, 5], [4, 5, 12]];
 
-union() {
-  for (a = [0 : 20 : 360])
-    rotate([0, 0, a])
-      spline_hose(path, outer_diameter=2);
-}
+for (a = [0 : 40 : 359])
+  rotate([0, 0, a])
+    translate([2, 0, 0])
+      //spline_ramen(path, diameter=2, subdivisions=3, circle_steps=12);
+      spline_hose(path, outer_diameter=2, subdivisions=3, circle_steps=12);
