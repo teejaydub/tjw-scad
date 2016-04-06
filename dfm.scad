@@ -28,6 +28,10 @@ EPSILON = 0.01;
 EPSILON2 = [EPSILON, EPSILON];
 EPSILON3 = [EPSILON, EPSILON, EPSILON];
 
+// The "Golden Ratio," AKA golden mean or divine proportion, 
+// possibly overhyped but you could do worse as a relative size for nice forms.
+GOLDEN = 1.618;
+
 // Use like "THUMB = 1*inch;"
 inch = 25.4;
 

@@ -14,19 +14,12 @@
       Specifying orientation per-path-vertex may be the only complete solution.
 
   To do:
-    Examples, for putting on Thingiverse
-      carve out tunnels and/or grooves in a block
-      3D spline noodle
-      
     make the cross-section a parameter
       and it could be made from a spline
       and it could interpolate (loft) between several splines, twist, scale
         mustache
     make a version that passes the diameter along with the vector of points
       interpolate it with the same function as for the points
-    Number the control points in showMarkers()
-    lathe a solid = spline_lathe vs. spline_pot
-    spiral lathe
     spline surface
     Consider whether the iterative refinement is appropriate
       Is control over "ease" or "tightening" around control points feasible/desirable?
@@ -98,6 +91,20 @@ module spline_hose(path, inner_diameter=0, outer_diameter=1, circle_steps=12, su
   }
 }
 
+// Makes a lathed 3D shape whose contour matches path, as 2D points.
+// Think of it like shaping the outside of a ball of clay on a potter's wheel.
+// Automatically connects the first and last points to the Y axis (X=0).
+// Set $fn to the number of steps you want in the lathed extrusion.
+module spline_lathe(path, subdivisions=4)
+{
+  rotate_extrude()
+    polygon(concat(
+      [[0, path[0][1]]], 
+      smooth(path, subdivisions),
+      [[0, path[len(path) - 1][1]]])
+    );
+}
+
 // Makes a lathed 3D shape whose inner edge follows the given path, as 2D points.
 // Think of it like making a pot on a potter's wheel, where you want a defined wall thickness
 // and you want the pot to follow a given contour.
@@ -106,6 +113,7 @@ module spline_hose(path, inner_diameter=0, outer_diameter=1, circle_steps=12, su
 // Set 'preview' to show the 2D shape on the X-Y plane, along with inner_targets.
 // (Nice if you're trying to fit your shape to measurements of an existing object.)
 // Assumes the path is not a loop.
+// Set $fn to the number of steps you want in the lathed extrusion.
 module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[])
 {
   if (preview) {
