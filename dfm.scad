@@ -45,10 +45,16 @@ SINGLE_LAYER = NOMINAL_LAYER + EPSILON;
 // The first layer is usually thicker to promote good bonding with the build plate.
 // So, if you want a single layer, and it's the bottom layer, use this.
 FIRST_LAYER = NOMINAL_FIRST_LAYER + EPSILON;
-
-// The minimum horizontal thickness for something to get printed.
-MIN_THICKNESS = NOMINAL_LAYER * 2.6;
+// But that's probably not enough to actually get it to appear from the slicer,
+// so to produce a single first layer output, use this.
 MIN_THICKNESS_FIRST_LAYER = NOMINAL_FIRST_LAYER + 0.45;
+
+// The minimum horizontal thickness for something to get printed - a vertical wall, e.g.
+MIN_WALL_THICKNESS = NOMINAL_LAYER * 2.6;
+
+// If you want a dimension to be the same horizontally and vertically,
+// this is the minimum thickness for printing.
+MIN_THICKNESS = max(MIN_WALL_THICKNESS, MIN_THICKNESS_FIRST_LAYER);
 
 // This is the total delta between surfaces for different degrees of fit.
 // The main constant in each group is sized for things that slide freely between two walls; 
