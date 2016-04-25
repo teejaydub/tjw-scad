@@ -83,4 +83,5 @@ SUPPORT_WIDTH = MIN_THICKNESS;
 // Ends up being a couple of layers at 0.2 mm layer height.
 STRONG_FLEX = 0.45;
 
-// A good minimum thickness for something that should be quite rigid.
+// A good minimum thickness for something that should be quite rigid.
+RIGID_WALL = 1.2;
