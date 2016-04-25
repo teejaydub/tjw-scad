@@ -39,15 +39,15 @@ inch = 25.4;
 // ===========================================================================
 // Derived settings that you may not need to customize
 
-// This is the default for my machine.
+// Use this in calculations where you need something to be the minimum possible height.
 SINGLE_LAYER = NOMINAL_LAYER + EPSILON;
 
 // The first layer is usually thicker to promote good bonding with the build plate.
-// So, if you want a single layer, and it's the bottom layer, use this.
+// So, if you something a single layer tall, and it's the bottom layer, use this.
 FIRST_LAYER = NOMINAL_FIRST_LAYER + EPSILON;
-// But that's probably not enough to actually get it to appear from the slicer,
+// But that may not be enough to actually get it to appear from the slicer,
 // so to produce a single first layer output, use this.
-MIN_THICKNESS_FIRST_LAYER = NOMINAL_FIRST_LAYER + 0.45;
+MIN_THICKNESS_FIRST_LAYER = NOMINAL_FIRST_LAYER;
 
 // The minimum horizontal thickness for something to get printed - a vertical wall, e.g.
 MIN_WALL_THICKNESS = NOMINAL_LAYER * 2.6;
@@ -72,9 +72,15 @@ FRICTION_FIT = 0.4;  // Close enough to require some force, and then stick.
 FRICTION_FIT_FIXED = 0.6;
 FRICTION_FIT_SINGLE = 0.3;
 
+// ===========================================================================
+// These are features of the material used.
+// These settings are my general favorites for PLA.
+
 // The thickness of something to be printed just for support.
 SUPPORT_WIDTH = MIN_THICKNESS;
 
 // A good thickness for something that should flex, but be strong.
 // Ends up being a couple of layers at 0.2 mm layer height.
 STRONG_FLEX = 0.45;
+
+// A good minimum thickness for something that should be quite rigid.
