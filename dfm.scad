@@ -7,6 +7,9 @@
 // ===========================================================================
 // Settings to customize per printer
 
+// The size of the printer's nozzle.
+NOZZLE = 0.50;
+
 // The layer height setting you're using to print.
 NOMINAL_LAYER = 0.2;
 
@@ -50,11 +53,12 @@ FIRST_LAYER = NOMINAL_FIRST_LAYER + EPSILON;
 MIN_THICKNESS_FIRST_LAYER = NOMINAL_FIRST_LAYER;
 
 // The minimum horizontal thickness for something to get printed - a vertical wall, e.g.
-MIN_WALL_THICKNESS = NOMINAL_LAYER * 2.6;
+MIN_WALL_THICKNESS = NOZZLE * 1.04;
+MIN_WALL_THICKNESS_FIRST_LAYER = NOZZLE + MIN_THICKNESS_FIRST_LAYER;
 
 // If you want a dimension to be the same horizontally and vertically,
 // this is the minimum thickness for printing.
-MIN_THICKNESS = max(MIN_WALL_THICKNESS, MIN_THICKNESS_FIRST_LAYER);
+MIN_THICKNESS = max(MIN_WALL_THICKNESS, MIN_THICKNESS_FIRST_LAYER, MIN_WALL_THICKNESS_FIRST_LAYER);
 
 // This is the total delta between surfaces for different degrees of fit.
 // The main constant in each group is sized for things that slide freely between two walls; 
