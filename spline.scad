@@ -68,7 +68,7 @@ module spline_sausage(path, diameter=1, circle_steps=12, subdivisions=4)
   union() {
     translate(path[0])
       sphere(d=diameter, center=true, $fn=circle_steps);
-    ramen(smooth(path, subdivisions, loop), diameter, circle_steps);
+    ramen(smooth(path, subdivisions, false), diameter, circle_steps);
     translate(path[len(path) - 1])
       sphere(d=diameter, center=true, $fn=circle_steps);
   }
