@@ -31,6 +31,10 @@ EPSILON = 0.01;
 EPSILON2 = [EPSILON, EPSILON];
 EPSILON3 = [EPSILON, EPSILON, EPSILON];
 
+// Handy constant for when you want something big, and it doesn't matter how big.
+// Often used in Boolean subtraction.
+HUGE = 1000;
+
 // The "Golden Ratio," AKA golden mean or divine proportion, 
 // possibly overhyped but you could do worse as a relative size for nice forms.
 GOLDEN = 1.618;
