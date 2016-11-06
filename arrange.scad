@@ -33,3 +33,25 @@ module duplicate(n, diameter)
     }
   }
 }
+
+// Duplicate its children, mirrored in X.
+// Uses the +X copy as is, and mirrors it for the -X copy.
+module twin_x() {
+  mirror([1, 0, 0])
+    children();
+  children();
+}
+
+// Duplicate its children, mirrored in +Y and -Y with the given offset.
+module twin_y() {
+  mirror([0, 1, 0])
+    children();
+  children();
+}
+
+// Duplicate its children similarly, in both x and y.
+module twin_xy() {
+  twin_x()
+    twin_y()
+      children();
+}

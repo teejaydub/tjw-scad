@@ -41,3 +41,7 @@ module moveForward(x) {
     children();
 }
 
+module flipOver() {
+  rotate([180, 0, 0])
+    children();
+}
