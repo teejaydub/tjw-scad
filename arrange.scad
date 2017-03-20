@@ -10,7 +10,8 @@ module arrangeLine(diameter)
   }
 }
 
-// Arrange children in a 2-D grid, in steps of 'diameter' in X and Y.
+// Arranges all children in a 2-D grid in X-Y, at their current Z coordinates.
+// Specify the maximum dimension of any child in X or Y.
 module arrange(diameter)
 {
   root = ceil(sqrt($children-1));
@@ -39,17 +40,6 @@ module arrangeSpread(diameter)
       ])
         children(i);
     }
-}
-
-// Arranges all children in a 2-D grid in X-Y, at their current Z coordinates.
-// Specify the maximum dimension of any child in X or Y.
-module arrangeOnFloor(diameter)
-{
-  root = ceil(sqrt($children));
-  for (i = [0 : $children-1]) {
-    translate([diameter * floor(i / root), diameter * (i % root)])
-      children(i);
-  }
 }
 
 // Duplicate all children n times.
