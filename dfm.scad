@@ -81,6 +81,17 @@ FRICTION_FIT_FIXED = 0.6;
 FRICTION_FIT_SINGLE = 0.3;
 
 // ===========================================================================
+// Circles that need to rotate generally need more clearance,
+// because of irregularities in different axes of the printer,
+// and because of faceting in the model.
+
+CIRCLE_FIT = 0.2;
+
+LOOSE_CIRCLE_FIT = LOOSE_FIT + CIRCLE_FIT;
+SLIDE_CIRCLE_FIT = SLIDE_FIT + CIRCLE_FIT;
+FRICTION_CIRCLE_FIT = FRICTION_FIT + CIRCLE_FIT;
+
+// ===========================================================================
 // These are features of the material used.
 // These settings are my general favorites for PLA.
 

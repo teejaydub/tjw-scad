@@ -1,5 +1,25 @@
 /* Quick ways to arrange a bunch of child objects in space.*/
 
+// Arrange children in a line, in steps of 'diameter' in X and Y.
+module arrangeLine(diameter)
+{
+  translate([($children - 1) * -diameter / 2, 0])
+  for (i = [0 : $children-1]) {
+    translate([diameter * i, 0])
+      children(i);
+  }
+}
+
+// Arrange children in a 2-D grid, in steps of 'diameter' in X and Y.
+module arrange(diameter)
+{
+  root = ceil(sqrt($children-1));
+  for (i = [0 : $children-1]) {
+    translate([diameter * floor(i / root), diameter * (i % root)])
+      children(i);
+  }
+}
+
 // Arranges all children in a grid, distributed in X, Y, and Z.
 // Just specify the outside dimension of any child.
 module arrangeSpread(diameter)
@@ -17,7 +37,7 @@ module arrangeSpread(diameter)
         diameter * floor((i + i / root) % root),
         diameter * floor(i / root)
       ])
-        child(i);
+        children(i);
     }
 }
 
