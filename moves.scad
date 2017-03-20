@@ -4,6 +4,8 @@
   which is looking down the Y axis with X pointing right and Z to the top of the screen.
 */
 
+include <dfm.scad>
+
 module move(x=0,y=0,z=0,rx=0,ry=0,rz=0)
 { 
   translate([x,y,z])
@@ -41,3 +43,100 @@ module moveForward(x) {
     children();
 }
 
+module flipOver() {
+  rotate([180, 0, 0])
+    children();
+}
+
+module turnAround() {
+  rotate([0, 0, 180])
+    children();
+}
+
+module spin(angle) {
+  rotate([0, 0, angle])
+    children();
+}
+
+module invert() {
+  mirror([0, 0, 1])
+    children();
+}
+
+// Trim functions: remove the area indicated by the name.
+// Specifying the target size improves OpenSCAD display.
+// Add an offset to move the trim line towards what's being trimmed;
+// e.g. trimLower(offset=5) trims away from Z=-5 in the -Z direction.
+
+module trimLower(size=HUGE, offset=0) {
+  difference() {
+    union() {
+      children();
+    }
+    moveDown(size/2 + offset)
+      cube([size, size, size], center=true);
+  }
+}
+
+module trimUpper(size=HUGE, offset=0) {
+  difference() {
+    union() {
+      children();
+    }
+    moveUp(size/2 + offset)
+      cube([size, size, size], center=true);
+  }
+}
+
+module trimRight(size=HUGE, offset=0) {
+  difference() {
+    union() {
+      children();
+    }
+    moveRight(size/2 + offset)
+      cube([size, size, size], center=true);
+  }
+}
+
+module trimLeft(size=HUGE, offset=0) {
+  difference() {
+    union() {
+      children();
+    }
+    moveLeft(size/2 + offset)
+      cube([size, size, size], center=true);
+  }
+}
+
+module trimBack(size=HUGE, offset=0) {
+  difference() {
+    union() {
+      children();
+    }
+    moveBack(size/2 + offset)
+      cube([size, size, size], center=true);
+  }
+}
+
+module trimFront(size=HUGE, offset=0) {
+  difference() {
+    union() {
+      children();
+    }
+    moveForward(size/2 + offset)
+      cube([size, size, size], center=true);
+  }
+}
+
+// Includes only the parts of the children that fit in the selected quadrant.
+// q is a vector of sizes.
+module includeQuadrant(q=[HUGE, HUGE, HUGE]) {
+  intersection() {
+    union() {
+      children();
+    }
+    scale(q) {
+      cube([1, 1, 1]);
+    }
+  }
+}

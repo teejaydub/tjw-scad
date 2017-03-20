@@ -1,5 +1,5 @@
 /* Design For Manufacture (DFM) constants.
-  Include it using: include <dfm.scad>
+  Include it using: include <tjw-scad/dfm.scad>
   Use these to allow others to easily modify your designs to work well on their own printers,
   or to port your own designs to your next printer!
 */
@@ -104,3 +104,5 @@ STRONG_FLEX = 0.45;
 
 // A good minimum thickness for something that should be quite rigid.
 RIGID_WALL = 1.2;
+  
+THICK_WALL = 2;
