@@ -7,6 +7,8 @@
 use <arrange.scad>;
 use <moves.scad>;
 
+EPSILON = 0.01;
+
 
 // Generates a lower right triangle in the fourth quadrant of X-Y, extruded in Z.
 // If center=true, centers in Z; otherwise, it's in +Z.
@@ -17,12 +19,53 @@ module right_triangle(dims, center=false) {
       polygon([[0, 0], [-dims[0], 0], [0, dims[1]]]);
 }
 
+// A "bump" made of a portion of a sphere.
+// Its bottom is at Z=0, where it has the given radius,
+// and its convex curve reaches just up to h.
+module spherical_bump(r, h) {
+  big_r = (h*h + r*r)/(2*h);
+  d = 2 * big_r;
+  difference() {
+    moveDown(big_r - h)
+      sphere(r=big_r);
+    moveDown(big_r)  // cut off at Z=0
+      cube([d, d, d], center=true);
+  }
+}
+
 module hollow_cube(dims, walls){
   holes = dims - 2*walls + 2*EPSILON3;
   difference(){
     cube(dims);
     translate(walls - EPSILON3)
       cube(holes);
+  }
+}
+
+// A cylinder with its center cut out.
+// Modeled in +Z, centered in X-Y.
+module pipe(h, d, wall) {
+  difference() {
+    cylinder(h=h, d=d);
+    moveDown(EPSILON)
+      cylinder(h=h + 2 * EPSILON, d=d - 2 * wall);
+  }
+}
+
+// A cylinder with the given height and radius, with its bottom at Z=0.
+// Chamfer the upper edge at 45 degrees by the given amount,
+// which defaults to half the height or half the radius,
+// whichever is smaller.
+module chamfered_cylinder(h, r, chamfer=-1) {
+  chamfer = (chamfer == -1? min(h/2, r/2): chamfer);
+  r2 = r - chamfer;
+  h1 = h - chamfer;
+  union() {
+    // bottom half is a straight cylinder.
+    cylinder(h=h1, r=r, center=false);
+    // upper half is a truncated cone.
+    moveUp(h1 - EPSILON)
+      cylinder(h=chamfer + EPSILON, r1=r, r2=r2);
   }
 }
 
