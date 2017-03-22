@@ -14,7 +14,7 @@ NOZZLE = 0.50;
 NOMINAL_LAYER = 0.2;
 
 // The nominal height of the first layer printed, often different from the rest.
-NOMINAL_FIRST_LAYER = 0.35;
+NOMINAL_FIRST_LAYER = 0.3;
 
 // The steepest angle, in degrees from +Z, that your printer can print.
 // The maximum overhang angle.
