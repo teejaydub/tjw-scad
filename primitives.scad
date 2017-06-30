@@ -33,6 +33,17 @@ module spherical_bump(r, h) {
   }
 }
 
+// Same, but with a rounded bottom edge.
+module spherical_bump_rounded(r, h) {
+  d = 2 * r;
+  scale([1, 1, 2 * h / d])
+    difference() {
+      sphere(r=r);
+      moveDown(r)  // cut off at Z=0
+        cube([d, d, d], center=true);
+    }
+}
+
 module hollow_cube(dims, walls){
   holes = dims - 2*walls + 2*EPSILON3;
   difference(){
@@ -49,6 +60,16 @@ module pipe(h, d, wall) {
     cylinder(h=h, d=d);
     moveDown(EPSILON)
       cylinder(h=h + 2 * EPSILON, d=d - 2 * wall);
+  }
+}
+
+// Same, but with different diameters and wall thicknesses at bottom and top.
+module pipe_tapered(h, d1, d2, wall1, wall2)
+{
+  difference() {
+    cylinder(h=h, d1=d1, d2=d2);
+    moveDown(EPSILON)
+      cylinder(h=h + 2 * EPSILON, d1=d1 - 2 * wall1, d2=d2 - 2 * wall2);
   }
 }
 
