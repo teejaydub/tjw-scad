@@ -161,6 +161,7 @@ module wall(path, width=1, height=1, loop=false)
 // Like a wall, but extrudes the given cross-section instead of linearly extruding upward.
 // Accepts 3D points in path.
 // cross_section must be 3D points, and assumes its points are all Z=0 and progress clockwise.
+// The +Y direction of the cross-section will be on the outside of the curve?
 module noodle(path, cross_section, loop=false)
 {
   if (loop) {
