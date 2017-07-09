@@ -55,6 +55,7 @@ module hollow_cube(dims, walls){
 
 // A cylinder with its center cut out.
 // Modeled in +Z, centered in X-Y.
+// d is the outer dimension.
 module pipe(h, d, wall) {
   difference() {
     cylinder(h=h, d=d);
@@ -70,6 +71,16 @@ module pipe_tapered(h, d1, d2, wall1, wall2)
     cylinder(h=h, d1=d1, d2=d2);
     moveDown(EPSILON)
       cylinder(h=h + 2 * EPSILON, d1=d1 - 2 * wall1, d2=d2 - 2 * wall2);
+  }
+}
+
+// Same, but d1 and d2 are the diameters at the centers of the walls.
+module pipe_tapered_c(h, d1, d2, wall1, wall2)
+{
+  difference() {
+    cylinder(h=h, d1=d1 + wall1, d2=d2 + wall2);
+    moveDown(EPSILON)
+      cylinder(h=h + 2 * EPSILON, d1=d1 - wall1, d2=d2 - wall2);
   }
 }
 
