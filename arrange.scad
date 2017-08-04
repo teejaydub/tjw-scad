@@ -83,9 +83,21 @@ module twin_xy(mirrorX=true, mirrorY=true) {
 // Generate four of its children (usually just one child),
 // centered in X-Y with the given distance between them (an array in X and Y).
 // If tx and ty are specified, translate all children by that much.
+// If either component of d is zero, only generate two duplicates.
+// If both components are zero, just generate one child, centered.
 module corners(d, t=[0, 0]) {
   translate(t)
-    twin_xy()
-      translate(d / 2)
-        children();
+    if (d[0] != 0 && d[1] != 0) {
+      twin_xy()
+        translate(d / 2)
+          children();
+    } else if (d[0] != 0) {
+      twin_x()
+        translate(d / 2)
+          children();
+    } else if (d[1] != 0) {
+      twin_y()
+        translate(d / 2)
+          children();
+    }
 }

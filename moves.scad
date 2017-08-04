@@ -108,6 +108,14 @@ module trimLeft(size=HUGE, offset=0) {
   }
 }
 
+// Trims both right and left sides with the given offset.
+// (Using an offset of 0 makes no sense - it would include nothing - so the default is not zero.)
+module trimSides(size=HUGE, offset=5) {
+  trimLeft(size, offset)
+    trimRight(size, offset)
+      children();
+}
+
 module trimBack(size=HUGE, offset=0) {
   difference() {
     union() {

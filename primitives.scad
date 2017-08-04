@@ -235,9 +235,35 @@ module torus(r1, r2) {
       circle(r = r1);
 }
 
-// A centered cube, except that it's not centered in Z.
+// Negative torus, for cutting off a rounded corner from something.
+// Modeled the same as the torus.
+// You may want to trim it before you use it.
+module torusCutter(r1, r2) {
+  difference() {
+    cube([2 * (r2 + r1) + 2*EPSILON, 2 * (r2 + r1) + 2*EPSILON, 2 * r1 + 2*EPSILON], center=true);
+    torus(r1, r2);
+  }
+}
+
+// Cutter for the inside edge of a torus.
+// Looks like a hub for a torus-shaped wheel.
+// Nice for rounding a fillet in two curving dimensions.
+module torusHub(r1, r2) {
+  intersection() {
+    torusCutter(r1, r2);
+    cylinder(r=r2, h=2 * r1 + 2, center=true);
+  }
+}
+
+// A centered cube, except that it's not centered in Z - its bottom is at Z=0.
 module cubeOnFloor(dims) {
   moveUp(dims[2] / 2)
+    cube(dims, center=true);
+}
+
+// Same, but its top is at Z=0. 
+module cubeUnderFloor(dims) {
+  moveDown(dims[2] / 2)
     cube(dims, center=true);
 }
 
