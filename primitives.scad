@@ -19,6 +19,16 @@ module right_triangle(dims, center=false) {
       polygon([[0, 0], [-dims[0], 0], [0, dims[1]]]);
 }
 
+// Generates a hexagon on the X-Y plane.
+// d is the width of a wrench that you're fitting around it like a nut.
+module hexagon(d) {
+  boxWidth = d/1.75;
+
+  for (r = [-60, 0, 60])
+    rotate([0,0,r]) 
+      square([boxWidth, d], center=true);
+}
+
 // A "bump" made of a portion of a sphere.
 // Its bottom is at Z=0, where it has the given radius,
 // and its convex curve reaches just up to h.
@@ -98,6 +108,27 @@ module chamfered_cylinder(h, r, chamfer=-1) {
     // upper half is a truncated cone.
     moveUp(h1 - EPSILON)
       cylinder(h=chamfer + EPSILON, r1=r, r2=r2);
+  }
+}
+
+// A cylinder with the given height and radius, with its bottom at Z=0.
+// Bevel the upper edge with the given radius,
+// which defaults to half the height or half the radius,
+// whichever is smaller.
+module beveled_cylinder(h, r, bevel=-1) {
+  bevel = (bevel == -1? min(h/2, r/2): bevel);
+  r2 = r - bevel;
+  h1 = h - bevel;
+
+  // Construct it in 2D from bottom and top rects joined by a circle,
+  // then lathe it.
+  rotate_extrude(convexity = 10) {
+    union() {
+      square([r, h1]);
+      translate([r2, h1])
+        circle(r=bevel);
+      square([r2, h]);
+    }
   }
 }
 
