@@ -1,6 +1,6 @@
 /* Quick ways to arrange a bunch of child objects in space.*/
 
-// Arrange children in a line, in steps of 'diameter' in X and Y.
+// Arrange children in a line, in steps of 'diameter' in X.
 module arrangeLine(diameter)
 {
   translate([($children - 1) * -diameter / 2, 0])
@@ -53,6 +53,17 @@ module duplicate(n, diameter)
         children(j);
     }
   }
+}
+
+// Same, but just in a line in X.
+module duplicateLine(n, diameter)
+{
+  translate([(n - 1) * -diameter / 2, 0])
+    for (i = [0 : n-1]) {
+      translate([diameter * i, 0])
+        for (j = [0 : $children-1])
+          children(j);
+    }
 }
 
 // Duplicate its children, mirrored in X.
