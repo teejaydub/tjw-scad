@@ -43,6 +43,31 @@ module moveForward(x) {
     children();
 }
 
+module nudgeLeft() {
+  moveLeft(EPSILON)
+    children();
+}
+module nudgeRight() {
+  moveRight(EPSILON)
+    children();
+}
+module nudgeBack() {
+  moveBack(EPSILON)
+    children();
+}
+module nudgeForward() {
+  moveForward(EPSILON)
+    children();
+}
+module nudgeUp() {
+  moveUp(EPSILON)
+    children();
+}
+module nudgeDown() {
+  moveDown(EPSILON)
+    children();
+}
+
 module flipOver() {
   rotate([180, 0, 0])
     children();
