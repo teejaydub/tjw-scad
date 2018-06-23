@@ -74,6 +74,27 @@ module pipe(h, d, wall) {
   }
 }
 
+// Same, with chamfers on inner and outer circumferences, top and bottom.
+// Chamfer at 45 degrees by the given amount,
+// which defaults to a quarter of the height or the radius,
+// whichever is smaller.
+module pipe_chamfered(h, d, wall, chamfer=-1)
+{
+  chamfer = (chamfer == -1? min(h/4, d/4): chamfer);
+  rotate_extrude(convexity=10) {
+    polygon([
+      [d / 2, h - chamfer],
+      [d / 2, chamfer],
+      [d / 2 - chamfer, 0],
+      [d / 2 - (wall - chamfer), 0],
+      [d / 2 - wall, chamfer],
+      [d / 2 - wall, h - chamfer],
+      [d / 2 - (wall - chamfer), h],
+      [d / 2 - chamfer, h]
+      ]);
+  }
+}
+
 // Same, but with different diameters and wall thicknesses at bottom and top.
 module pipe_tapered(h, d1, d2, wall1, wall2)
 {
