@@ -198,7 +198,7 @@ module udon(path, width=1, height=0, loop=false)
 // and inserts additional points between the points to smooth it.
 // Repeats that n times, and returns the result.
 // If loop is true, connects the end of the path to the beginning.
-function smooth(path, n, loop=false) =
+function smooth(path, n=4, loop=false) =
   n == 0
     ? path
     : loop
