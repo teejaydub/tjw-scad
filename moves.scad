@@ -83,6 +83,12 @@ module spin(angle) {
     children();
 }
 
+// I'm forever modeling things on the X-Y plane and then flipping them vertically around X.
+module tipUp(angle=90) {
+  rotate([angle, 0, 0])
+    children();
+}
+
 module invert() {
   mirror([0, 0, 1])
     children();
