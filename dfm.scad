@@ -42,6 +42,7 @@ GOLDEN = 1.618;
 // Use like "THUMB = 1*inch;"
 inch = 25.4;
 
+PI = 3.1415629;
 
 // ===========================================================================
 // Derived settings that you may not need to customize
