@@ -19,8 +19,28 @@ module right_triangle(dims, center=false) {
       polygon([[0, 0], [-dims[0], 0], [0, dims[1]]]);
 }
 
+// Convert a regular polygon inner or "flat" diameter to the outer or "vertex" one.
+function polygon_outer_d(sides, inner_d) = inner_d / cos(180 / sides);
+
+// Generates an extruded polygon with the given number of equal sides,
+// and either the outer diameter measured at the vertices,
+// or the inner diameter measured from flat-to-flat (if an even number of faces).
+// (When cloning a physical object, that can be easier to measure precisely.)
+module regular_polygon_prism(sides=5, outer_d=0, flat_d=0, h=1) {
+  outer_d = (outer_d? outer_d : polygon_outer_d(sides, flat_d));
+  cylinder(h=h, $fn=sides, d=outer_d);
+}
+
+// Convenience functions
+module decagon_prism(outer_d=0, flat_d=10, h=1)
+  { regular_polygon_prism(10, outer_d, flat_d, h); }
+
+module hexagon_prism(outer_d=0, flat_d=10, h=1)
+  { regular_polygon_prism(6, outer_d, flat_d, h); }
+
 // Generates a hexagon on the X-Y plane.
-// d is the width of a wrench that you're fitting around it like a nut.
+// d is the flat diameter - the width of a wrench that you're fitting around it like a nut.
+// (Maybe more efficient if done with regular_polygon_prism now?)
 module hexagon(d) {
   boxWidth = d/1.75;
 
@@ -163,10 +183,18 @@ module chamfered_square(dims, radius) {
 
 // Produces a 2D rectangle with the corners rounded off, centered.
 // Dims is [x, y], and radius is taken off of each side.
-module rounded_square(dims, radius) {
-  offset(r=radius) {
-    square(dims - [2*radius, 2*radius], center = true);
-  }
+module rounded_square(dims, radius, center=true) {
+  translate([center? 0: radius, center? 0: radius, 0])
+    offset(r=radius)
+      square(dims - [2*radius, 2*radius], center=center);
+}
+
+// Like a "cube" with the given dims, with corners rounded off in the X-Y plane,
+// to the given radius.
+// (See chiclet() to round all corners.)
+module slab(dims, radius, center=true) {
+  linear_extrude(height=dims[2])
+    rounded_square(dims, radius, center);
 }
 
 /* Produces a centered square, hollow, with the specified wall thicknesses,
@@ -190,7 +218,17 @@ module chamfered_square_shell(dims, walls, inner_radius, outer_radius, hollow=tr
   difference() {
     chamfered_square(dims, outer_radius);
     if (hollow)
-      chamfered_square(dims - w*walls, inner_radius);
+      chamfered_square(dims - 2*walls, inner_radius);
+  }
+}
+
+// Same as chamfered_square, but with no chamfers.
+module square_shell(dims, walls, hollow=true) {
+  difference() {
+    square(dims + [0, 0]);
+    if (hollow)
+      translate(walls)
+        square(dims - 2*walls);
   }
 }
 
@@ -198,10 +236,13 @@ module chamfered_square_shell(dims, walls, inner_radius, outer_radius, hollow=tr
   dims is [x, y, z] - includes just the body in Z, not top and bottom.
   walls is [x, y, z] (z is for top and bottom).
   Puts the corner at the origin, and the frame in +x, +y, +z.
+  If centerV is true, centers the result vertically.
   If top and/or bottom are true, adds solid slabs in +Z and -Z.
+  (Top and bottom slabs are added around the body, wherever it's placed vertically.)
 */
-module round_frame(dims, walls, radius, top=false, bottom=false, body=true) {
-  translate([0, 0, -dims[2]/2])
+module round_frame(dims, walls, radius, top=false, bottom=false, body=true, centerV=true) {
+  deltaV = centerV? -dims[2]/2 : 0;
+  translate([0, 0, deltaV])
     union() {
       if (body)
         linear_extrude(height=dims[2])
@@ -218,8 +259,9 @@ module round_frame(dims, walls, radius, top=false, bottom=false, body=true) {
 }
 
 // Same, but with a chamfered edge.
-module chamfered_frame(dims, walls, radius, top=false, bottom=false, body=true) {
-  translate([0, 0, -dims[2]/2]) {
+module chamfered_frame(dims, walls, radius, top=false, bottom=false, body=true, centerV=true) {
+  deltaV = centerV? -dims[2]/2 : 0;
+  translate([0, 0, deltaV])
     union() {
       if (body)
         linear_extrude(height=dims[2])
@@ -233,26 +275,23 @@ module chamfered_frame(dims, walls, radius, top=false, bottom=false, body=true) 
           linear_extrude(height=walls[2])
             chamfered_square_shell(dims, walls, radius, radius, hollow=false);
     }
-  }
 }
 
 // Same, but with square corners - not round or chamfered.
-module frame(dims, walls, top=false, bottom=false, body=true) {
-  translate([0, 0, -dims[2]/2]) {
+module frame(dims, walls, top=false, bottom=false, body=true, centerV=true) {
+  deltaV = centerV? -dims[2]/2 : 0;
+  translate([0, 0, deltaV])
     union() {
       if (body)
         linear_extrude(height=dims[2])
-          hollow_cube(dims, walls);
+          square_shell(dims, walls);
       if (bottom) 
         translate([0, 0, -walls[2]])
-          linear_extrude(height=walls[2])
-            cube(dims);
+          cube([dims[0], dims[1], walls[2]]);
       if (top) 
         translate([0, 0, dims[2]])
-          linear_extrude(height=walls[2])
-            cube(dims);
+          cube([dims[0], dims[1], walls[2]]);
     }
-  }
 }
 
 
