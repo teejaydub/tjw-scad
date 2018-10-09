@@ -55,6 +55,17 @@ module duplicate(n, diameter)
   }
 }
 
+// Same, but pass an array of two offsets for the diameters.
+module duplicate2(n, diameters) {
+  root = ceil(sqrt(n));
+  for (j = [0 : $children-1]) {
+    for (i = [0: n - 1]) {
+      translate([diameters[0] * floor(i / root), diameters[1] * (i % root)])
+        children(j);
+    }
+  }
+}
+
 // Same, but just in a line in X.
 module duplicateLine(n, diameter)
 {
@@ -64,6 +75,13 @@ module duplicateLine(n, diameter)
         for (j = [0 : $children-1])
           children(j);
     }
+}
+
+// Duplicate the children, with the given offset (a duple or triple).
+module copyShifted(offset) {
+  children();
+  translate(offset)
+    children();
 }
 
 // Duplicate its children, mirrored in X.
