@@ -346,6 +346,58 @@ module torusHub(r1, r2) {
   }
 }
 
+// A cube, centered in and sitting on X-Y, with the specified draft angles.
+// Draft always shrinks one end of the cube.
+// E.g., a positive draft angle of 5 in X means the width is less on the bottom than the top,
+// so that the sides make an angle of 5 degrees from vertical.  The top dimension is as specified.
+// A negative X draft angle means that the bottom is as specified, and the top is narrower.
+// The Y draft is similar, but affects only the Y axis.
+// (There is no Z draft, for clarity - would it be versus X or Y? - and because often,
+// draft is for removing something from a mold, where an "up" direction is natural.)
+module cubeDraftAngle(dims, drafts) {
+  cubeDraft(dims, [
+      drafts[0] > 0? tan(drafts[0]) * dims[2]:
+        drafts[0] < 0? -tan(drafts[0]) * dims[2]:
+          0,
+      drafts[1] > 0? tan(drafts[1]) * dims[2]:
+        drafts[1] < 0? -tan(drafts[1]) * dims[2]:
+          0,
+    ]);
+}
+
+// Same, but deltas are absolute, subtracted from each side.
+// That is, with an X delta of 1, the bottom points move 1 toward the center.
+// With an X delta of -1, the top points move 1 toward the center.
+// Again, Z draft isn't allowed, because what it would mean is unclear.
+module cubeDraft(dims, deltas) {
+  // Positive values for the dimensions at upper and lower levels.
+  dxLower = dims[0] / 2 - (deltas[0] > 0? deltas[0]: 0);
+  dxUpper = dims[0] / 2 - (deltas[0] < 0? -deltas[0]: 0);
+  dyLower = dims[1] / 2 - (deltas[1] > 0? deltas[1]: 0);
+  dyUpper = dims[1] / 2 - (deltas[1] < 0? -deltas[1]: 0);
+
+  // See figures at: https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Primitive_Solids#polyhedron
+  CubePoints = [
+    [ -dxLower, -dyLower, 0 ],  //0
+    [  dxLower, -dyLower, 0 ],  //1
+    [  dxLower,  dyLower, 0 ],  //2
+    [ -dxLower,  dyLower, 0 ],  //3
+    [ -dxUpper, -dyUpper, dims[2] ],  //4
+    [  dxUpper, -dyUpper, dims[2] ],  //5
+    [  dxUpper,  dyUpper, dims[2] ],  //6
+    [ -dxUpper,  dyUpper, dims[2] ]]; //7
+    
+  CubeFaces = [
+    [0,1,2,3],  // bottom
+    [4,5,1,0],  // front
+    [7,6,5,4],  // top
+    [5,6,2,1],  // right
+    [6,7,3,2],  // back
+    [7,4,0,3]]; // left
+    
+  polyhedron(CubePoints, CubeFaces);
+}
+
 // A centered cube, except that it's not centered in Z - its bottom is at Z=0.
 module cubeOnFloor(dims) {
   moveUp(dims[2] / 2)
