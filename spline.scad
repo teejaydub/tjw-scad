@@ -228,7 +228,7 @@ function subdivide_loop(path, i=0) =
     [path[i], interpolateClosed(path, n, i)]
   ]));
 
-weight = [-1, 8, 8, -1] / 14;
+weight = [-1, 9, 9, -1] / 16;
 weight0 = [6, 11, -1] / 16;
 weight2 = [1, 1] / 2;
 
