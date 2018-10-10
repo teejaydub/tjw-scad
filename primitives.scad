@@ -38,6 +38,9 @@ module decagon_prism(outer_d=0, flat_d=10, h=1)
 module hexagon_prism(outer_d=0, flat_d=10, h=1)
   { regular_polygon_prism(6, outer_d, flat_d, h); }
 
+module triangle_prism(outer_d=0, flat_d=10, h=1)
+  { regular_polygon_prism(3, outer_d, flat_d, h); }
+
 // Generates a hexagon on the X-Y plane.
 // d is the flat diameter - the width of a wrench that you're fitting around it like a nut.
 // (Maybe more efficient if done with regular_polygon_prism now?)
