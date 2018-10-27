@@ -88,6 +88,10 @@ module tipUp(angle=90) {
   rotate([angle, 0, 0])
     children();
 }
+module tipDown(angle=90) {
+  rotate([-angle, 0, 0])
+    children();
+}
 
 module invert() {
   mirror([0, 0, 1])
