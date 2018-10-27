@@ -77,6 +77,27 @@ module duplicateLine(n, diameter)
     }
 }
 
+// Duplicate a single child n times.
+// 'diameter' is the diameter of a circle that encloses the child (not the diameter of the
+// resulting circle of objects - that's computed automatically).
+// Arranges the duplicates in a circle so that there is 'clearance' space between two adjacent copies.
+//
+// Handy if you want to print a bunch of something,
+// and you want no possibility of stringing on one particular side of an object:
+// have that side face the back (Y+).
+module duplicateCircle(n, diameter, clearance) {
+  if (n == 1) {
+    children();
+  } else {
+    angle = 360 / n;
+    radius = (diameter + clearance) / (2 * sin(angle / 2));  // see lab notebook 10/27/2018
+    for (i = [0 : n-1])
+      rotate([0, 0, i * angle])
+        translate([0, radius, 0])
+          children();
+  }
+}
+
 // Duplicate the children, with the given offset (a duple or triple).
 module copyShifted(offset) {
   children();
