@@ -15,9 +15,13 @@ module arrangeLine(diameter)
 module arrange(diameter)
 {
   root = ceil(sqrt($children-1));
-  for (i = [0 : $children-1]) {
-    translate([diameter * floor(i / root), diameter * (i % root)])
-      children(i);
+  if ($children < 2) {
+    children();
+  } else {
+    for (i = [0 : $children-1]) {
+      translate([diameter * floor(i / root), diameter * (i % root)])
+        children(i);
+    }
   }
 }
 
@@ -95,6 +99,18 @@ module duplicateCircle(n, diameter, clearance) {
       rotate([0, 0, i * angle])
         translate([0, radius, 0])
           children();
+  }
+}
+
+// Duplicates a single child n times, rotated equally around the Z axis.
+module duplicateRadially(n) {
+  if (n == 1)
+    children();
+  else {
+    angle = 360 / n;
+    for (i = [0 : n-1])
+      rotate([0, 0, i * angle])
+        children();
   }
 }
 
