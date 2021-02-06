@@ -114,6 +114,7 @@ module spline_lathe(path, subdivisions=4)
 // (Nice if you're trying to fit your shape to measurements of an existing object.)
 // Assumes the path is not a loop.
 // Set $fn to the number of steps you want in the lathed extrusion.
+// If you want the path to define the *outer* edge, make the width negative.
 module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[])
 {
   if (preview) {
@@ -121,11 +122,11 @@ module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[])
       showMarkers(inner_targets);
     color("blue")
       translate([width/2, 0, 0])
-        spline_ribbon(path, width, subdivisions);
+        spline_ribbon(path, abs(width), subdivisions);
   } else {
     rotate_extrude()
       translate([width/2, 0, 0])
-        spline_ribbon(path, width, subdivisions);
+        spline_ribbon(path, abs(width), subdivisions);
    }
 }
 
