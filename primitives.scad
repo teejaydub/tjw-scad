@@ -35,6 +35,9 @@ module regular_polygon_prism(sides=5, outer_d=0, flat_d=0, h=1) {
 module decagon_prism(outer_d=0, flat_d=10, h=1)
   { regular_polygon_prism(10, outer_d, flat_d, h); }
 
+module octagon_prism(outer_d=0, flat_d=10, h=1)
+  { regular_polygon_prism(8, outer_d, flat_d, h); }
+
 module hexagon_prism(outer_d=0, flat_d=10, h=1)
   { regular_polygon_prism(6, outer_d, flat_d, h); }
 
@@ -51,6 +54,17 @@ module hexagon(d) {
     rotate([0,0,r]) 
       square([boxWidth, d], center=true);
 }
+
+// Returns a sinusoidal path, with the given length in X, varying in Y, at Z=0.
+// Goes through the given number of whole cycles.
+// Starts at X=0, Y=0.
+function sinePath(length, cycles, amplitude) =
+  let(POINTS_PER_CYCLE = 16)
+  let(POINTS = POINTS_PER_CYCLE * cycles)
+  concat(
+    [for (i = [0 : 1 : POINTS])
+      [i * length / POINTS, amplitude * sin(i * 360 * cycles / POINTS)]
+    ]);
 
 // A "bump" made of a portion of a sphere.
 // Its bottom is at Z=0, where it has the given radius,
@@ -97,13 +111,25 @@ module pipe(h, d, wall) {
   }
 }
 
+// A cylinder with its center cut out.
+// Modeled in +Z, centered in X-Y.
+// outer is the outer diameter, inner is the inner (hole) diameter.
+module pipe2(h, outer, inner) {
+  difference() {
+    cylinder(h=h, d=outer);
+    moveDown(EPSILON)
+      cylinder(h=h + 2 * EPSILON, d=inner);
+  }
+}
+
+
 // Same, with chamfers on inner and outer circumferences, top and bottom.
 // Chamfer at 45 degrees by the given amount,
-// which defaults to a quarter of the height or the radius,
+// which defaults to a quarter of the height, the radius, or the wall width,
 // whichever is smaller.
 module pipe_chamfered(h, d, wall, chamfer=-1)
 {
-  chamfer = (chamfer == -1? min(h/4, d/4): chamfer);
+  chamfer = (chamfer == -1? min(h/4, d/4, wall/4): chamfer);
   rotate_extrude(convexity=10) {
     polygon([
       [d / 2, h - chamfer],
@@ -176,8 +202,35 @@ module beveled_cylinder(h, r, bevel=-1) {
   }
 }
 
+// Same, but with bevels top and bottom.
+module sausage(h, r, bevel=-1) {
+  bevel = (bevel == -1? min(h/2, r/2): bevel);
+  r2 = r - bevel;
+  h2 = h - 2 * bevel;
+
+  rotate_extrude(convexity = 10) {
+    union() {
+      translate([0, bevel])
+        square([r, h2]);  // shorter, wider square
+      square([r2, h]);  // taller, narrower square
+      intersection() {
+        // Just keep the half-circles (quarter would even be enough),
+        // so the rotation doesn't complain when bevel > r/2
+        union() {
+          translate([r2, bevel])
+            circle(r=bevel);
+          translate([r2, bevel + h2])
+            circle(r=bevel);
+        }
+        square([2*r, h + EPSILON]);
+      }
+    }
+  }
+}
+
 // Produces a 2D rectangle with the corners taken off at a 45-degree angle, centered.
 // Dims is [x, y], and radius is taken off of each side.
+// Radius must be less than 1/4 of the smaller dimesntion.
 module chamfered_square(dims, radius) {
   offset(delta=radius, chamfer=true) {
     square(dims - [2*radius, 2*radius], center = true);
@@ -186,6 +239,7 @@ module chamfered_square(dims, radius) {
 
 // Produces a 2D rectangle with the corners rounded off, centered.
 // Dims is [x, y], and radius is taken off of each side.
+// Radius must be less than 1/4 of the smaller dimesntion.
 module rounded_square(dims, radius, center=true) {
   translate([center? 0: radius, center? 0: radius, 0])
     offset(r=radius)
@@ -198,6 +252,12 @@ module rounded_square(dims, radius, center=true) {
 module slab(dims, radius, center=true) {
   linear_extrude(height=dims[2])
     rounded_square(dims, radius, center);
+}
+
+// Same, but chamfered instead of rounded, and always centered.
+module chamfered_slab(dims, radius) {
+  linear_extrude(height=dims[2])
+    chamfered_square(dims, radius);
 }
 
 /* Produces a centered square, hollow, with the specified wall thicknesses,
@@ -349,7 +409,7 @@ module torusHub(r1, r2) {
   }
 }
 
-// A cube, centered in and sitting on X-Y, with the specified draft angles.
+// A cube, centered in and sitting on X-Y, with the specified draft angles, in degrees.
 // Draft always shrinks one end of the cube.
 // E.g., a positive draft angle of 5 in X means the width is less on the bottom than the top,
 // so that the sides make an angle of 5 degrees from vertical.  The top dimension is as specified.
@@ -360,10 +420,10 @@ module torusHub(r1, r2) {
 module cubeDraftAngle(dims, drafts) {
   cubeDraft(dims, [
       drafts[0] > 0? tan(drafts[0]) * dims[2]:
-        drafts[0] < 0? -tan(drafts[0]) * dims[2]:
+        drafts[0] < 0? -tan(-drafts[0]) * dims[2]:
           0,
       drafts[1] > 0? tan(drafts[1]) * dims[2]:
-        drafts[1] < 0? -tan(drafts[1]) * dims[2]:
+        drafts[1] < 0? -tan(-drafts[1]) * dims[2]:
           0,
     ]);
 }
@@ -472,6 +532,12 @@ module chiclet(dx, dy, dz) {
     }
   else
     chicletZ(dx, dy, dz);
+}
+
+// Same, but in +Z.
+module chicletOnFloor(dims) {
+  moveUp(dims[2] / 2)
+    chiclet(dims[0], dims[1], dims[2]);
 }
 
 // A round fillet like a bead of caulk,
