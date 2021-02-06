@@ -83,6 +83,18 @@ module spin(angle) {
     children();
 }
 
+// Rotates clockwise, looking from the origin into +Y.
+module turnRight(angle=90) {
+  rotate([0, angle, 0])
+    children();
+}
+
+// Rotates counterclockwise, looking from the origin into +Y.
+module turnLeft(angle=90) {
+  rotate([0, -angle, 0])
+    children();
+}
+
 // I'm forever modeling things on the X-Y plane and then flipping them vertically around X.
 module tipUp(angle=90) {
   rotate([angle, 0, 0])
