@@ -382,11 +382,23 @@ module teardrop(width, depth) {
 /* Torus with minor radius r1 and major radius r2,
   centered at the origin,
   lying flat like a bagel on a table, with the hole pointing up.
+  If r2 < r1, you'll get nothing - I don't know what you'd expect, but it wouldn't be a torus.
 */
 module torus(r1, r2) {
-  rotate_extrude(convexity = 10)
-    translate([r2, 0])
-      circle(r = r1);
+  if (r2 >= r1)
+    rotate_extrude(convexity = 10)
+      translate([r2, 0])
+        circle(r=r1);
+}
+
+// Just the portion of a torus, positioned as above, that's in the +X/+Y quadrant.
+module quarterTorus(r1, r2) {
+  if (r2 >= r1)
+    intersection() {
+      torus(r1, r2);
+      translate([0, 0, -r1 + EPSILON])
+        cube([r1 + r2 + EPSILON, r1 + r2 + EPSILON, 2*r2 + 2*EPSILON]);
+    }
 }
 
 // Negative torus, for cutting off a rounded corner from something.
@@ -406,6 +418,22 @@ module torusHub(r1, r2) {
   intersection() {
     torusCutter(r1, r2);
     cylinder(r=r2, h=2 * r1 + 2, center=true);
+  }
+}
+
+// A sphere resting on the X-Y plane and centered in it.
+// Its lower hemisphere filleted to the X-Y plane.
+module filleted_sphere(d) {
+  let(r = d / 2, fr1 = r / 4) {
+    union() {
+      moveUp(r)
+        sphere(d=d);
+      moveUp(fr1)
+        // Trimming the upper quarter of the hub makes its slope there 45 degrees,
+        // which exactly matches the slope of the sphere at that point, for a smooth transition.
+        trimUpper(2 * d, fr1 / 2)
+          torusHub(fr1, r);
+    }
   }
 }
 

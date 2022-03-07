@@ -67,10 +67,10 @@ module spline_sausage(path, diameter=1, circle_steps=12, subdivisions=4)
 {
   union() {
     translate(path[0])
-      sphere(d=diameter, center=true, $fn=circle_steps);
+      sphere(d=diameter, $fn=circle_steps);
     ramen(smooth(path, subdivisions, false), diameter, circle_steps);
     translate(path[len(path) - 1])
-      sphere(d=diameter, center=true, $fn=circle_steps);
+      sphere(d=diameter, $fn=circle_steps);
   }
 }
 
@@ -129,6 +129,22 @@ module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[])
         spline_ribbon(path, abs(width), subdivisions);
    }
 }
+
+// ================================================================================
+// Path primitives
+
+// Returns a spiral path, centered in XY, spiraling up in Z.
+// r: the radius of the spiral.
+// pitch: the vertical distance between two "coils" of the path.
+// h: the total vertical distance covered.
+// $fa: angle for each step, in degrees.
+function spiral(r=10, pitch=1, h=10) =
+  let (total_turns = h / pitch)
+  [for (theta = [0 : $fa : total_turns * 360])
+    [r * cos(theta),
+      r * sin(theta),
+      theta / 360 * pitch]
+  ];
 
 // ================================================================================
 // Rendering paths and loops
@@ -516,3 +532,20 @@ translate([0, TEST_SPACING, 0])
     // #8: A splined sausage.
     spline_sausage(squiggle, circle_steps=20);
   }
+
+  // Third row: spirals, for the examples that use 3D paths.
+  translate([0, 2 * TEST_SPACING, 0])
+    SeparateChildren(TEST_SPACING) {
+      $fn=20;
+
+      // Placeholders for examples that use 2D paths.
+      sphere(r=1/2);
+      sphere(r=1/2);
+      sphere(r=1/2);
+      sphere(r=1/2);
+
+      ramen(spiral(h=4, pitch=1.5, r=2), diameter=0.75);
+      spline_ramen(spiral(h=4, pitch=1.5, r=2), diameter=0.75);
+      spline_udon(spiral(h=4, pitch=1.5, r=2), width=0.5);
+      spline_sausage(spiral(h=4, pitch=1.5, r=2), diameter=0.75);
+    }
