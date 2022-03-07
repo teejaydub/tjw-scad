@@ -434,7 +434,7 @@ module showMarkers(points) {
 // Do 'use <spline.scad>' rather than 'include' to avoid including these into your module.
 
 TEST_SPACING = 5;
-NUM_TEST_COLUMNS = 7;
+NUM_TEST_COLUMNS = 8;
 
 module SeparateChildren(space) {
   for (i = [0 : 1 : $children-1])
@@ -497,7 +497,7 @@ SeparateChildren(TEST_SPACING) {
   ramen(path_3D, loop=true);
 
   // #6: Test spline_ramen(loop)
-  spline_ramen(path_3D, width=1, loop=true, circle_steps=30);
+  spline_ramen(path_3D, diameter=1, loop=true, circle_steps=30);
 
   // #7: A splined udon noodle, that has nonzero Z components.
   spline_udon(squiggle, loop=true);
