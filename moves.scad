@@ -195,3 +195,18 @@ module includeQuadrant(q=[HUGE, HUGE, HUGE]) {
     }
   }
 }
+
+// Given a starting and ending value and a factor, return the value that's that factor between them.
+// E.g., from=0, to=100, factor = 0.75 => 75.
+function extrapolate(from, to, factor) =
+  from + (to - from) * factor;
+
+// Same, but give hard boundaries at from and to, so factors outside the range [0, 1] give the boundary values.
+function interpolate(from, to, factor) =
+  max(from, min(to, extrapolate(from, to, factor)));
+
+// The reverse: given endpoints of a range, return the fraction the given value is through that range.
+// Doesn't enforce endpoints, so if value < from or > to, result will be < 0 or > 1.
+function fraction_through(from, to, value) =
+  (value - from) / (to - from);
+  
