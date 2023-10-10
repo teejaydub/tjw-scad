@@ -38,9 +38,10 @@
 
 // Makes a 2D shape that interpolates between the points on the given path,
 // with the given width, in the X-Y plane.
-module spline_ribbon(path, width=1, subdivisions=4, loop=false)
+// If a constrain2d function is supplied, it is applied to each point in the spline-smoothed path.
+module spline_ribbon(path, width=1, subdivisions=4, loop=false, constrain2d=identity)
 {
-  ribbon(smooth(path, subdivisions, loop), width, loop);
+  ribbon(map(constrain2d, smooth(path, subdivisions, loop)), width, loop);
 }
 
 // Extrudes a spline ribbon to the given Z height.
@@ -115,18 +116,19 @@ module spline_lathe(path, subdivisions=4)
 // Assumes the path is not a loop.
 // Set $fn to the number of steps you want in the lathed extrusion.
 // If you want the path to define the *outer* edge, make the width negative.
-module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[])
+// If a constrain2d function is supplied, it is applied to each point in the spline-smoothed path.
+module spline_pot(path, width=1, subdivisions=4, preview=0, inner_targets=[], constrain2d=identity)
 {
   if (preview) {
     color("red")
       showMarkers(inner_targets);
     color("blue")
       translate([width/2, 0, 0])
-        spline_ribbon(path, abs(width), subdivisions);
+        spline_ribbon(path, abs(width), subdivisions, constrain2d=constrain2d);
   } else {
     rotate_extrude()
       translate([width/2, 0, 0])
-        spline_ribbon(path, abs(width), subdivisions);
+        spline_ribbon(path, abs(width), subdivisions, constrain2d=constrain2d);
    }
 }
 
@@ -207,6 +209,28 @@ module udon(path, width=1, height=0, loop=false)
   cross_section = [[-h, -w, 0], [-h, w, 0], [h, w, 0], [h, -w, 0]];
   noodle(path, cross_section, loop=loop);
 }
+
+
+// ==================================================================
+// Functions for working with 2D paths (as lists of points)
+
+// Multiplies each 2D point in points by the scale factors in scale.
+function scale2d(points, scale) =
+  [for(p = points) [p[0] * scale[0], p[1] * scale[1]]];
+
+// Adds the given amount to each point in points.
+function translate2d(points, d) =
+  [for(p = points) [p[0] + d[0], p[1] + d[1]]];
+
+// Return for each point, the larger of each current point component and the corresponding one in minPoint.
+// That is, constrain points so that it lies above minPoint in both dimensions.
+function floor2d(points, minPoint) =
+  [for(p = points) [max(p[0], minPoint[0]), max(p[1], minPoint[1])]];
+
+identity = function(p) p;
+
+function map(f, points) = [for(p = points) f(p)];
+
 
 // ==================================================================
 // Interpolation and path smoothing
