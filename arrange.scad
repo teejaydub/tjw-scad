@@ -131,10 +131,18 @@ module twin_x(mirror=true) {
   children();
 }
 
-// Duplicate its children, mirrored in +Y and -Y with the given offset.
+// Duplicate its children, mirrored in +Y and -Y.
 module twin_y(mirror=true) {
   if (mirror)
     mirror([0, 1, 0])
+      children();
+  children();
+}
+
+// Duplicate its children, mirrored in +Z and -Z.
+module twin_z(mirror=true) {
+  if (mirror)
+    mirror([0, 0, 1])
       children();
   children();
 }
@@ -146,12 +154,34 @@ module twin_xy(mirrorX=true, mirrorY=true) {
       children();
 }
 
+// Duplicate its children similarly, in both y and z.
+module twin_yz(mirrorY=true, mirrorZ=true) {
+  twin_y(mirrorY)
+    twin_z(mirrorZ)
+      children();
+}
+
+// Duplicate its children similarly, in both x and z.
+module twin_xz(mirrorX=true, mirrorZ=true) {
+  twin_x(mirrorX)
+    twin_z(mirrorZ)
+      children();
+}
+
+// Duplicate its children similarly, in x, y, and z.
+module twin_xyz(mirrorX=true, mirrorY=true, mirrorZ=true) {
+  twin_x(mirrorX)
+    twin_y(mirrorY)
+      twin_z(mirrorZ)
+        children();
+}
+
 // Generate four of its children (usually just one child),
 // centered in X-Y with the given distance between them (an array in X and Y).
 // If tx and ty are specified, translate all children by that much.
 // If either component of d is zero, only generate two duplicates.
 // If both components are zero, just generate one child, centered.
-module corners(d, t=[0, 0]) {
+module corners(d=[1, 1], t=[0, 0]) {
   translate(t)
     if (d[0] != 0 && d[1] != 0) {
       twin_xy()
