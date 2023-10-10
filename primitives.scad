@@ -614,3 +614,25 @@ module filletedChiclet(dx, dy, dz, fillet=0) {
         fillet(length=dx - dy, r=fillet, $fn=30);
   }
 }
+
+// A countersunk screw hole cutter.
+// Modeled in -Z, with the countersink just above Z=0, centered in X-Y.
+// That is, as though you're screwing the screw downward into the X-Y plane.
+// Pass the screw hole diameter and height, the diameter of the (usually flat) screw head,
+// and the depth of the countersink.
+// The default head diameter is twice the hole width.
+// The default countersink depth is half the hole diameter.
+module screwHole(diameter, height, head_d=0, sink_depth=0) {
+  head_d = head_d? head_d: diameter * 2;
+  sink_depth = sink_depth? sink_depth: diameter / 2;
+  nudgeUp()
+    // Easier to model the whole thing upside down, then flip.
+    flipOver()
+    union() {
+      // Hole
+      cylinder(d=diameter, h=height + 2*EPSILON);
+
+      // Countersink
+      cylinder(d1=head_d, d2=diameter, h=sink_depth + EPSILON);
+    }
+}
