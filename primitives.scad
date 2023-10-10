@@ -502,7 +502,7 @@ module cubeUnderFloor(dims) {
 }
 
 // A cylinder, on the X-Y plane, with a fillet to the horizontal plane.
-// 'r1' is the fillet radius; defaults to d/2.
+// 'fillet' is the fillet radius; defaults to d/2.
 // If 'quarter', only fillet over the positive X+Y quadrants.
 // (Good for sticking it in a corner.)
 module filletedCylinder(h, d, fillet=0, quarter=false) {
@@ -568,6 +568,51 @@ module chicletOnFloor(dims) {
     chiclet(dims[0], dims[1], dims[2]);
 }
 
+// Similar to the chiclet, but allows any radius instead of using the smallest.
+// Maybe less efficient.  Probably negligible.
+// Centered.
+// r is the radius of rounding; constrained (and defaulting) to half of the smallest side.
+// [not yet finished!]
+module roundedCube(dims, r=0) {
+  smallestSide = min(dims);
+  radius = r == 0? smallestSide / 2: min(r, smallestSide / 2);
+  diameter = 2 * radius;
+  union() {
+    cube([dims.x - diameter + 0.1, dims.y - diameter + 0.1, dims.z], center=true);
+    cube([dims.x, dims.y - diameter + 0.1, dims.z - diameter], center=true);
+    cube([dims.x - diameter + 0.1, dims.y, dims.z - diameter], center=true);
+
+    // Cylinders on the sides, shortened along their lengths
+    twin_xz()
+      moveUp(dims[2] / 2 - radius)
+      moveLeft((dims[0] - diameter) / 2)
+        rotate([90, 0, 0])
+          cylinder(h=dims[1] - diameter, d=diameter, center=true);
+    twin_yz()
+      moveUp(dims[2] / 2 - radius)
+      moveBack((dims[1]- diameter) / 2)
+        rotate([0, 90, 0])
+          rotate([0, 0, 5])
+            cylinder(h=dims[0] - diameter, d=diameter, center=true);
+
+    // Cylinders at the four corners
+    twin_xy()
+      moveLeft((dims[0] - diameter) / 2)
+      moveBack((dims[1] - diameter) / 2)
+        cylinder(h=dims[2] - diameter, d=diameter, center=true);
+
+    // Spheres at the corners
+    twin_xyz()
+     translate([dims[0]/2 - radius, dims[1]/2 - radius, dims[2]/2 - radius])
+       sphere(d=diameter);
+  }
+}
+
+module roundedCubeOnFloor(dims, r) {
+  moveUp(dims.z / 2)
+    roundedCube(dims, r);
+}
+
 // A round fillet like a bead of caulk,
 // centered in X, laid down between X-Z and X-Y planes,
 // in -Y and +Z - that is, in front on the floor.
@@ -587,9 +632,11 @@ module fillet(length, r) {
 
 // Like a cube with these dimensions,
 // but filleted outward on the bottom to blend into a horizontal surface.
+// 'fillet' is the fillet radius; defaults to dy/2.
 // Modeled sitting on the X-Y plane, centered.
 // Assumes Y is the thinnest dimension.
 // Leaves some holes on the bottom that I don't care about right now.
+// Also may have some limitations in dimensions that make sense??
 module filletedChiclet(dx, dy, dz, fillet=0) {
   fillet = fillet? fillet: dy/2;
   union() {
@@ -598,7 +645,7 @@ module filletedChiclet(dx, dy, dz, fillet=0) {
     intersection() {
       moveDown(dy/2)
         moveUp(dz/2)
-          chiclet(dx, dy, dz + dy, bothRound=false, $fn=30);
+          chiclet(dx, dy, dz + dy, $fn=30);
       moveUp(dz/2 - 0.01)
         cube([2*dx, 2*dy, dz], center=true);
     }
