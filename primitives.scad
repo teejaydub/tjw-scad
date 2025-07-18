@@ -4,6 +4,7 @@
     use <tjw-scad/primitives.scad>;
 */
 
+include <dfm.scad>
 use <arrange.scad>;
 use <moves.scad>;
 
