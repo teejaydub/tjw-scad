@@ -677,9 +677,10 @@ module screwHole(diameter, height, head_d=0, sink_depth=0) {
     flipOver()
     union() {
       // Hole
-      cylinder(d=diameter, h=height + 2*EPSILON);
+      cylinder(d=diameter, h=height + FRICTION_FIT + 2*EPSILON);
 
       // Countersink
-      cylinder(d1=head_d, d2=diameter, h=sink_depth + EPSILON);
+      moveDown(sink_depth)
+        cylinder(d1=head_d, d2=diameter, h=sink_depth + EPSILON);
     }
 }

@@ -90,7 +90,7 @@ CIRCLE_FIT = 0.2;
 
 LOOSE_CIRCLE_FIT = LOOSE_FIT + CIRCLE_FIT;
 SLIDE_CIRCLE_FIT = SLIDE_FIT + CIRCLE_FIT;
-FRICTION_CIRCLE_FIT = FRICTION_FIT + CIRCLE_FIT;
+FRICTION_CIRCLE_FIT = CIRCLE_FIT;
 
 // ===========================================================================
 // These are features of the material used.
