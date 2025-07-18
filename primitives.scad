@@ -506,7 +506,7 @@ module cubeUnderFloor(dims) {
 // If 'quarter', only fillet over the positive X+Y quadrants.
 // (Good for sticking it in a corner.)
 module filletedCylinder(h, d, fillet=0, quarter=false) {
-  r1 = fillet? fillet: d/2;
+  r1 = fillet? fillet: min(h, d/2);
   r2 = r1 + d/2;
   union() {
     cylinder(h=h, d=d);
@@ -669,7 +669,9 @@ module filletedChiclet(dx, dy, dz, fillet=0) {
 // and the depth of the countersink.
 // The default head diameter is twice the hole width.
 // The default countersink depth is half the hole diameter.
-module screwHole(diameter, height, head_d=0, sink_depth=0) {
+// If clearance is specified, it's the height of an additional cutter
+// designed to give access to the screw head.
+module screwHole(diameter, height, head_d=0, sink_depth=0, clearance=0) {
   head_d = head_d? head_d: diameter * 2;
   sink_depth = sink_depth? sink_depth: diameter / 2;
   nudgeUp()
@@ -680,6 +682,14 @@ module screwHole(diameter, height, head_d=0, sink_depth=0) {
       cylinder(d=diameter, h=height + 2*EPSILON);
 
       // Countersink
-      cylinder(d1=head_d, d2=diameter, h=sink_depth + EPSILON);
+      moveDown(sink_depth) {
+        cylinder(d1=head_d, d2=diameter, h=sink_depth + EPSILON);
+
+        // Clearance
+        if (clearance) {
+          moveDown(clearance - EPSILON)
+            cylinder(d1=head_d * 2, d2=head_d, h=clearance + EPSILON);
+        }
+      }
     }
 }
