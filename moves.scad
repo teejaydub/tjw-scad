@@ -68,9 +68,11 @@ module nudgeDown() {
     children();
 }
 
-module flipOver() {
-  rotate([180, 0, 0])
-    children();
+module flipOver(aroundZ=0) {
+  moveUp(aroundZ)
+    rotate([180, 0, 0])
+      moveDown(aroundZ)
+        children();
 }
 
 module turnAround() {
@@ -96,12 +98,17 @@ module turnLeft(angle=90) {
 }
 
 // I'm forever modeling things on the X-Y plane and then flipping them vertically around X.
+// Front up, back down.
 module tipUp(angle=90) {
   rotate([angle, 0, 0])
     children();
 }
-module tipDown(angle=90) {
+// Front down, back up.
+// If an origin is supplied, rotate around that.
+module tipDown(angle=90, origin=[0, 0, 0]) {
+  translate(origin)
   rotate([-angle, 0, 0])
+  translate(-origin)
     children();
 }
 
@@ -109,6 +116,8 @@ module invert() {
   mirror([0, 0, 1])
     children();
 }
+
+
 
 // Trim functions: remove the area indicated by the name.
 // Specifying the target size improves OpenSCAD display.
